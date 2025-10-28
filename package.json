@@ -1,0 +1,20 @@
+{
+  "name": "simp2p",
+  "version": "0.1.0",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^39.0.0"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git@github-kji245:KineticJetIce245/simp2p.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs"
+}
