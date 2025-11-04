@@ -1,0 +1,353 @@
+ice_server_url = "stun:stun.l.google.com:19302"
+const local = new RTCPeerConnection({ iceServers: [{ urls: ice_server_url }] });
+
+let local_ice_candidates = [];
+let mincre = 0;
+let lincre = 0;
+let im_offering = false;
+let chatchannel, filechannel, uploaded_file;
+let file_comp = {
+  ws: null,
+  tfs: 0,
+  rfs: 0,
+  wb: [],
+  bb: 0,
+};
+
+function setupChatChannel(ch) {
+  ch.onopen = () => {
+    log("Chat channel is open!");
+  };
+  ch.onmessage = (event) => {
+    log_message(true, event.data);
+  };
+}
+
+let writeBuffer = [];
+let bufferedBytes = 0;
+async function flushBuffer() {
+  if (file_comp.wb.length === 0) return;
+  await file_comp.ws.write(new Blob(file_comp.wb));
+  file_comp.wb = [];
+  file_comp.bb = 0;
+}
+
+function setupFileChannel(ch) {
+  ch.onopen = () => {
+    log("File channel is open!");
+  };
+
+  const BATCH_SIZE = 16 * 1024 * 1024;
+
+  filechannel.onmessage = async (event) => {
+    const chunk = event.data;
+
+    file_comp.wb.push(chunk);
+    file_comp.bb += chunk.byteLength;
+
+    if (bufferedBytes >= BATCH_SIZE) {
+      await flushBuffer();
+    }
+  };
+
+  // After transfer is done
+  async function finishTransfer() {
+    await flushBuffer();      // write remaining data
+    await writable.close();   // close file
+  }
+  ch.onmessage = async (event) => {
+    await file_comp.ws.write(event.data);
+    file_comp.rfs += event.data.byteLength;
+    download_display(true, `${file_comp.rfs} bytes received`);
+  };
+  ch.onclose = async () => {
+    log("File channel closed.");
+    if (file_comp.ws !== null) {
+      await file_comp.ws.close();
+      file_comp.ws = null;
+    }
+  };
+}
+
+local.ondatachannel = (event) => {
+  if (event.channel.label === "chat") {
+    chatchannel = event.channel;
+    setupChatChannel(chatchannel);
+  } else if (event.channel.label === "file") {
+    filechannel = event.channel;
+    setupFileChannel(filechannel);
+  } else {
+    log("Unknown data channel: " + event.channel.label);
+    return;
+  }
+};
+
+local.onicecandidate = (event) => {
+  if (event.candidate) {
+    local_ice_candidates.push(event.candidate);
+  } else {
+    show_sdp();
+  }
+};
+
+function show_sdp() {
+  valide_ice_candidates = [];
+  log("Found valid ICE candidates");
+
+  for (let i = 0; i < local_ice_candidates.length; i++) {
+    let ice_candidate = local_ice_candidates[i];
+    if (ice_candidate.url == ice_server_url) {
+      valide_ice_candidates.push(ice_candidate);
+    }
+  }
+
+  if (valide_ice_candidates.length == 0) {
+    document.getElementById("local_sdp_display").value = "No valid ICE candidates found.";
+  } else {
+    document.getElementById("local_sdp_display").value =
+      JSON.stringify({ spd: local.localDescription, ice: valide_ice_candidates[0] });
+    document.getElementById("local_sdp_generation").disabled = true;
+  }
+}
+
+async function sdp_generate() {
+  im_offering = true;
+  chatchannel = local.createDataChannel("chat");
+  setupChatChannel(chatchannel);
+
+  filechannel = local.createDataChannel("file");
+  setupFileChannel(filechannel);
+
+  log("Generating SDP");
+  const offer = await local.createOffer();
+  await local.setLocalDescription(offer);
+}
+
+async function receive_remote_sdp() {
+  const remote_sdp_input = document.getElementById("remote_sdp_display").value;
+  let remote_data;
+  try {
+    remote_data = JSON.parse(remote_sdp_input);
+  } catch (e) {
+    log("Invalid SDP format");
+    document.getElementById("remote_sdp_display").value = "";
+    return;
+  }
+
+  const remote_description = new RTCSessionDescription(remote_data.spd);
+  await local.setRemoteDescription(remote_description);
+
+  const remote_ice_candidate = new RTCIceCandidate(remote_data.ice);
+  await local.addIceCandidate(remote_ice_candidate);
+
+  if (im_offering === false) {
+    const answer = await local.createAnswer();
+    await local.setLocalDescription(answer);
+    show_sdp();
+  } else {
+    document.getElementById("local_sdp_generation").disabled = true;
+  }
+  document.getElementById("remote_sdp_reception").disabled = true;
+  log("Remote SDP and ICE candidate processed.");
+}
+
+local.onconnectionstatechange = () => {
+  log('Connection state:' + local.connectionState);
+};
+
+function to_clipboard(element) {
+  navigator.clipboard.writeText(element.value)
+    .then(() => {
+      log("Copied to clipboard!");
+    })
+    .catch(err => {
+      log("Failed to copy text.");
+    });
+}
+
+function from_clipboard(element) {
+  navigator.clipboard.readText()
+    .then(text => {
+      element.value = text;
+      log("Pasted from clipboard!");
+    })
+    .catch(err => {
+      log("Failed to read clipboard contents.");
+    });
+}
+
+function send_message() {
+  let message_input = document.getElementById("local_message");
+  let message = message_input.value;
+  if (chatchannel && chatchannel.readyState === "open") {
+    chatchannel.send(message);
+    log_message(false, message);
+    message_input.value = "";
+  } else {
+    log("Data channel is not open.");
+  }
+}
+
+function log_message(isremote, message) {
+  let log_container = document.getElementById("message_log_container");
+  let title = `<p class="message_title"><b>${isremote ? "Remote - " : "Local - "}
+      ${new Date().toLocaleTimeString()}</b></p>`;
+  let mid = "mlog" + mincre + isremote;
+  mincre += 1;
+  let paragraph = `<p class="message" id="${mid}"></p>`;
+  log_container.innerHTML += title + paragraph;
+  document.getElementById(mid).innerText = message;
+}
+
+function log(text) {
+  let log_container = document.getElementById("log_container");
+  let lid = "log" + mincre;
+  mincre += 1;
+  let paragraph = `<p class="log" id="${lid}"><b>[${new Date().toLocaleTimeString()
+    }]</b > ${text}</p >`;
+  log_container.innerHTML += paragraph;
+}
+
+function download_display(isdownload, message) {
+  if (isdownload) {
+    let file_action_display = document.getElementById("receiving_file_status");
+    file_action_display.innerText = `Receiving file: ${message}`
+  } else {
+    let file_action_display = document.getElementById("send_file_status");
+    file_action_display.innerText = `Sending file: ${message}`
+  }
+}
+
+/*
+function readSliceAsync(file, start, end) {
+  const slice = file.slice(start, end);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(event.target.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(slice);
+  });
+}
+
+async function sendFile() {
+  if (!uploaded_file) {
+    log("No file selected for upload.");
+    return;
+  }
+
+  document.getElementById("file_upload_button").disabled = true;
+  document.getElementById("file_send_button").disabled = true;
+  log("Sending file: " + uploaded_file.name);
+
+  const chunk_size = 16 * 1024;
+  let offset = 0;
+  let file_size_bytes = new Uint8Array(6);
+
+  file_size_bytes[0] = 63; // start of file transfer
+  let fileSize = uploaded_file.size;
+  for (let i = 0; i < 5; i++) {
+    file_size_bytes[5 - i] = fileSize & 0xFF; // get the least significant byte
+    fileSize >>= 8; // shift right 8 bits
+  }
+  filechannel.send(file_size_bytes.buffer);
+
+
+  while (offset < uploaded_file.size) {
+    const chunk = await readSliceAsync(uploaded_file, offset, offset + chunk_size);
+    const message = new Uint8Array(1 + chunk.byteLength);
+    message[0] = 1;
+    message.set(new Uint8Array(chunk), 1);
+    filechannel.send(message.buffer);
+    download_display(false, `${uploaded_file.name} - ${offset + chunk_size} / ${uploaded_file.size} bytes sent`);
+    offset += chunk.byteLength;
+
+    while (filechannel.bufferedAmount > chunk_size * 4) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  let endsignal = new Uint8Array(1);
+  endsignal[0] = 31; // end of file transfer
+  filechannel.send(endsignal.buffer);
+
+}
+*/
+async function sendFile() {
+  document.getElementById("file_upload_button").disabled = true;
+  document.getElementById("file_send_button").disabled = true;
+  log("Sending file: " + uploaded_file.name);
+  const chunk_size = 64 * 1024;
+  const MAX_CHUNK_SIZE = 1024 * 1024;
+  let offset = 0;
+
+  while (offset < uploaded_file.size) {
+    const slice = uploaded_file.slice(offset, offset + chunk_size);
+    const arrayBuffer = await slice.arrayBuffer();
+    filechannel.send(arrayBuffer);
+    download_display(false, `${uploaded_file.name} - ${Math.min(offset + chunk_size,
+      uploaded_file.size)} / ${uploaded_file.size} bytes sent`);
+    offset += arrayBuffer.byteLength;
+
+    while (filechannel.bufferedAmount > MAX_CHUNK_SIZE) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  filechannel.close();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const sdp_generation_button = document.getElementById("local_sdp_generation");
+  sdp_generation_button.addEventListener("click", sdp_generate);
+
+  const copy_button = document.getElementById("copy_local_sdp");
+  copy_button.addEventListener("click", () => {
+    const offer_sdp_display = document.getElementById("local_sdp_display");
+    to_clipboard(offer_sdp_display);
+  });
+
+  const paste_button = document.getElementById("paste_remote_sdp");
+  paste_button.addEventListener("click", () => {
+    const answer_sdp_display = document.getElementById("remote_sdp_display");
+    from_clipboard(answer_sdp_display);
+  });
+
+  const sdp_reception_button = document.getElementById("remote_sdp_reception");
+  sdp_reception_button.addEventListener("click", receive_remote_sdp);
+
+  const send_message_button = document.getElementById("send_message");
+  send_message_button.addEventListener("click", send_message);
+
+  const file_upload_button = document.getElementById("file_upload_button");
+  const file_input = document.getElementById("file_input");
+  file_upload_button.addEventListener("click", () => {
+    file_input.click();
+  });
+  file_input.addEventListener("change", (event) => {
+    uploaded_file = event.target.files[0];
+    log("Selected file: " + uploaded_file.name);
+    log("File size: " + uploaded_file.size + " bytes");
+  });
+
+  const file_send_button = document.getElementById("file_send_button");
+  file_send_button.addEventListener("click", sendFile);
+
+  file_download_button = document.getElementById('file_download_button');
+  alert("To receive a file, please click the 'Download' button to select a location to save the incoming file.");
+  new Promise((resolve) => {
+    file_download_button.addEventListener('click', async (event) => {
+      const fileHandle = await window.showSaveFilePicker();
+      if (file_comp.ws !== null) {
+        await file_comp.ws.close();
+      }
+      file_comp.ws = await fileHandle.createWritable();
+      document.getElementById("file_download_button").disabled = true;
+      document.getElementById("receiving_file_status").innerText = "Ready to receive file.";
+      document.getElementById("remote_sdp_reception").disabled = false;
+      document.getElementById("local_sdp_generation").disabled = false;
+      resolve(event); // resolve the promise with the click event
+    });
+  });
+});
+
+

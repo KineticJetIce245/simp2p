@@ -1,6 +1,15 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
+
+require("electron-reload")(__dirname, {
+  electron: path.join(__dirname, "node_modules", ".bin", "electron"),
+});
+
+ipcMain.on("open-settings", () => {
+  console.log("Opening settings window...");
+});
+
 function createMainWindow() {
   console.log("Electron launched...");
 
@@ -18,10 +27,12 @@ function createMainWindow() {
     .catch(err => console.error("Failed to load main.html:", err));
 
   win.webContents.openDevTools();
+
+  win.removeMenu();
 }
 
 app.whenReady().then(() => {
-  console.log("App ready");
+  console.log("App is ready.");
   createMainWindow();
 
   app.on("activate", () => {
