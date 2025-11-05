@@ -1,4 +1,5 @@
 <script>
+  import new_chat_icon from "$lib/assets/icons/add_box.svg";
   function opensettings() {
     window.api.openSettings();
   }
@@ -7,11 +8,20 @@
 <main>
   <div class="container">
     <div class="sidebar">
-      <div class="sidebar-header">Web RIC</div>
+      <div class="sidebar-header">Web RTC</div>
       <div class="conversations">
         <div class="conversation">Conversation 1</div>
+        <div class="conversation">Conversation 1</div>
+        <div class="conversation">Conversation 1</div>
       </div>
-      <div class="new-chat">+ New Chat</div>
+      <div class="new-chat">
+        <img
+          src={new_chat_icon}
+          alt="New Chat"
+          style="width:30px; height:30px; margin-right:8px;"
+        />
+        <p style="horizontal-align:middle; font-size:16px;">New Chat</p>
+      </div>
     </div>
 
     <div class="main-chat">
@@ -32,16 +42,9 @@
 </main>
 
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-  }
-
+  @import "$lib/theme.css";
   main {
     height: 100%;
-    background-color: #f7f7f8;
     margin: 0;
     padding: 0;
   }
@@ -54,44 +57,42 @@
   /* Sidebar */
   .sidebar {
     width: 300px;
-    background-color: #202123;
-    color: #fff;
     display: flex;
     flex-direction: column;
+    align-items: center;
   }
 
   .sidebar-header {
     padding: 20px;
     font-size: 1.2em;
     font-weight: bold;
-    border-bottom: 1px solid #333;
   }
 
   .conversations {
+    width: 100%;
     flex: 1;
     overflow-y: auto;
   }
 
   .conversation {
     padding: 15px 20px;
+    margin: 10px;
+    border-radius: 10px;
     cursor: pointer;
-    border-bottom: 1px solid #333;
-  }
-
-  .conversation:hover {
-    background-color: #343541;
   }
 
   .new-chat {
     padding: 15px 20px;
-    border-top: 1px solid #333;
     cursor: pointer;
-    text-align: center;
-    background-color: #343541;
-  }
+    margin: 10px;
+    margin-right: 20px;
+    border-radius: 10px;
+    width: 60%;
+    height: 24px;
 
-  .new-chat:hover {
-    background-color: #4a4c58;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   /* Main chat area */
@@ -99,7 +100,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
   }
 
   .chat-header {
