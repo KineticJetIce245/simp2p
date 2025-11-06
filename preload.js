@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("api", {
-  openSettings: () => ipcRenderer.send("open-settings")
+contextBridge.exposeInMainWorld("conversation", {
+  sendText: (text) => ipcRenderer.invoke("send-text", text),
+  sendFile: (filepath) => ipcRenderer.invoke("send-file", filepath)
 });

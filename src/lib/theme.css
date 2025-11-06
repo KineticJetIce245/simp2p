@@ -1,4 +1,13 @@
+@font-face {
+  font-family: "Figtree";
+  src: url("/fonts/Figtree/Figtree-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
 :root {
+  font-family: "Figtree";
+
   /** Base colors */
   --clr-dark-a0: #000000;
   --clr-light-a0: #ffffff;
@@ -54,25 +63,26 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #2c2c2c;
+  background: var(--clr-surface-a10);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #434343;
+  background: var(--clr-surface-a20);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #434943;
+  background: var(--clr-surface-tonal-a20);
 }
 
 main {
-  background-color: #030203;
+  background-color: var(--clr-surface-a0);
 }
 
 .sidebar {
   background-color: var(--clr-surface-a10);
-  color: #ffffff;
+  color: var(--clr-light-a0);
+  border-right: 1px solid var(--clr-surface-tonal-a30);
 }
 
 .conversation:hover {
@@ -84,5 +94,40 @@ main {
 }
 
 .main-chat {
-  background-color: #171717;
+  background-color: var(--clr-surface-a0);
+}
+
+.chat-header {
+  background-color: var(--clr-surface-tonal-a10);
+  color: var(--clr-light-a0);
+  border-bottom: 1px solid var(--clr-surface-tonal-a30);
+  text-align: center;
+}
+
+.chat-input {
+  background-color: var(--clr-surface-a0);
+  color: var(--clr-light-a0);
+}
+
+.chat-input button {
+  background-color: var(--clr-primary-a0);
+  color: var(--clr-light-a0);
+}
+
+.chat-input input {
+  border: 1px solid var(--clr-surface-tonal-a30);
+  background-color: var(--clr-surface-a10);
+  color: var(--clr-light-a0);
+}
+
+.chat-input input:focus {
+  border: 1px solid var(--clr-primary-a0);
+}
+
+.local-message {
+  color: var(--clr-light-a0);
+}
+
+.remote-message {
+  color: var(--clr-light-a0);
 }

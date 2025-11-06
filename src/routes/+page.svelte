@@ -1,7 +1,39 @@
 <script>
+  import { onMount } from "svelte";
   import new_chat_icon from "$lib/assets/icons/add_box.svg";
+
+  import ChatSubpage from "$lib/components/chat-subpage.svelte";
+
   function opensettings() {
     window.api.openSettings();
+  }
+
+  function loadConversations() {
+    console.log("Load Conversation Called");
+  }
+
+  let chat_subpage;
+  let addMessageRef;
+
+  onMount(() => {
+    console.log("Main Page Mounted");
+    addMessageRef = function (newMessage) {
+      chat_subpage.addMessage(newMessage);
+    };
+  });
+
+  async function sendText() {
+    console.log("Send Text Called");
+    const newMessage = {
+      id: Date.now().toString(),
+      text: "This is a new message!",
+      isloacal: true,
+    };
+    if (addMessageRef) {
+      addMessageRef(newMessage);
+    } else {
+      console.error("addMessageRef is not defined");
+    }
   }
 </script>
 
@@ -10,11 +42,25 @@
     <div class="sidebar">
       <div class="sidebar-header">Web RTC</div>
       <div class="conversations">
-        <div class="conversation">Conversation 1</div>
-        <div class="conversation">Conversation 1</div>
-        <div class="conversation">Conversation 1</div>
+        <div
+          role="button"
+          aria-labelledby="Load Conversations"
+          tabindex="0"
+          onclick={loadConversations}
+          onkeydown={(e) => e.key === "Enter" && loadConversations()}
+          class="conversation"
+        >
+          Conversation 1
+        </div>
       </div>
-      <div class="new-chat">
+      <div
+        role="button"
+        aria-labelledby="Load Conversations"
+        tabindex="0"
+        onclick={loadConversations}
+        onkeydown={(e) => e.key === "Enter" && loadConversations()}
+        class="new-chat"
+      >
         <img
           src={new_chat_icon}
           alt="New Chat"
@@ -26,23 +72,18 @@
 
     <div class="main-chat">
       <div class="chat-header">Conversation 1</div>
-      <div class="messages">
-        <div class="message bot-message">Hello! How can I help you today?</div>
-        <div class="message user-message">Hi! I want to learn HTML.</div>
-        <div class="message bot-message">
-          Sure! HTML is the backbone of web pages...
-        </div>
+      <div class="chat-holder">
+        <ChatSubpage bind:this={chat_subpage} />
       </div>
       <div class="chat-input">
         <input type="text" placeholder="Type a message..." />
-        <button>Send</button>
+        <button onclick={sendText}>Send</button>
       </div>
     </div>
   </div>
 </main>
 
 <style>
-  @import "$lib/theme.css";
   main {
     height: 100%;
     margin: 0;
@@ -63,9 +104,11 @@
   }
 
   .sidebar-header {
+    width: 100%;
     padding: 20px;
     font-size: 1.2em;
     font-weight: bold;
+    text-align: center;
   }
 
   .conversations {
@@ -75,14 +118,14 @@
   }
 
   .conversation {
-    padding: 15px 20px;
+    padding: 10px 15px;
     margin: 10px;
     border-radius: 10px;
     cursor: pointer;
   }
 
   .new-chat {
-    padding: 15px 20px;
+    padding: 10px 15px;
     cursor: pointer;
     margin: 10px;
     margin-right: 20px;
@@ -104,45 +147,23 @@
 
   .chat-header {
     padding: 20px;
-    border-bottom: 1px solid #ddd;
     font-weight: bold;
-    background-color: #f5f5f5;
   }
 
-  .messages {
+  .chat-holder {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
   }
 
-  .message {
-    margin-bottom: 15px;
-    padding: 10px 15px;
-    border-radius: 10px;
-    max-width: 70%;
-  }
-
-  .user-message {
-    background-color: #dcf8c6;
-    align-self: flex-end;
-  }
-
-  .bot-message {
-    background-color: #f1f0f0;
-    align-self: flex-start;
-  }
-
   .chat-input {
     padding: 15px 20px;
-    border-top: 1px solid #ddd;
     display: flex;
-    background-color: #f5f5f5;
   }
 
   .chat-input input {
     flex: 1;
     padding: 10px 15px;
-    border: 1px solid #ccc;
     border-radius: 20px;
     outline: none;
   }
@@ -151,8 +172,6 @@
     margin-left: 10px;
     padding: 10px 20px;
     border: none;
-    background-color: #10a37f;
-    color: #fff;
     border-radius: 20px;
     cursor: pointer;
   }
