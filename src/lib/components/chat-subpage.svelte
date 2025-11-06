@@ -2,19 +2,17 @@
 
 <script>
   import "$lib/theme.css";
-  let {
-    messages = [
-      {
-        id: "1",
-        text: "Hello!",
-        isloacal: false,
-      },
-    ],
-  } = $props();
+  let messages = $state([]);
 
-  export function addMessage(newMessage) {
-    messages = [...messages, newMessage];
-  }
+  export const self = {
+    addMessage: (next_message) => {
+      messages = [...messages, next_message];
+      console.log("Message added to chat subpage:", messages);
+    },
+    switchMessages: (new_messages_log) => {
+      messages = new_messages_log;
+    },
+  };
 </script>
 
 <div class="message-holder">
@@ -24,6 +22,10 @@
         ? 'local-message'
         : 'remote-message'}"
     >
+      <div class="message-info">
+        <b>{msg.isloacal === true ? "Local" : "Remote"}</b>:
+        {msg.time}
+      </div>
       {msg.text}
     </div>
   {/each}
@@ -41,6 +43,12 @@
     padding: 10px 15px;
     border-radius: 10px;
     max-width: 70%;
+    font-size: 18px;
+  }
+
+  .message-info {
+    font-size: 12px;
+    color: var(--clr-primary-a0);
   }
 
   .local-message {

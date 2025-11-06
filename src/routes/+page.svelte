@@ -1,38 +1,83 @@
 <script>
   import { onMount } from "svelte";
-  import new_chat_icon from "$lib/assets/icons/add_box.svg";
 
+  import NewChatSubpage from "$lib/components/new-chat-subpage.svelte";
   import ChatSubpage from "$lib/components/chat-subpage.svelte";
+  import IconAddBox from "$lib/assets/icons/icon_add_box.svelte";
+  import IconSend from "$lib/assets/icons/icon_send.svelte";
+  import IconUploadFile from "$lib/assets/icons/icon_upload_file.svelte";
 
-  function opensettings() {
-    window.api.openSettings();
-  }
+  const new_chat_load_info = {
+    loaded: false,
+    conversation_name: "New Chat",
+    conversation_id: null,
+  };
 
-  function loadConversations() {
-    console.log("Load Conversation Called");
-  }
+  let chat_load_info = new_chat_load_info;
 
   let chat_subpage;
-  let addMessageRef;
+  let csubref;
 
   onMount(() => {
-    console.log("Main Page Mounted");
-    addMessageRef = function (newMessage) {
-      chat_subpage.addMessage(newMessage);
-    };
+    console.log("Main Page Mounted.");
+
+    // load the reference to the child component
+    csubref = chat_subpage.self;
   });
 
+  // send text function
   async function sendText() {
+    let inputField = document.querySelector(".chat-input input");
+    let msg = inputField.value;
+    if (msg.trim() === "") {
+      console.warn("Empty message in input field, not sending.");
+      return;
+    }
     console.log("Send Text Called");
+    let current_time = Date.now();
     const newMessage = {
-      id: Date.now().toString(),
-      text: "This is a new message!",
+      id: current_time,
+      time: new Date(current_time).toLocaleString("en-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }),
+      text: msg,
       isloacal: true,
     };
-    if (addMessageRef) {
-      addMessageRef(newMessage);
+    if (csubref && csubref.addMessage) {
+      csubref.addMessage(newMessage);
     } else {
-      console.error("addMessageRef is not defined");
+      console.error(`Unable to load message on the chat
+      subpage: subpage reference is not defined`);
+    }
+    inputField.value = "";
+  }
+
+  let testText = `Lorem ipsum dolor sit amet,
+  consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua.
+  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+  laboris nisi ut aliquip ex ea commodo consequat. Duis
+  aute irure dolor in reprehenderit in voluptate velit esse
+  cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui
+  officia deserunt mollit anim id est laborum.`;
+
+  function switchConversation() {
+    console.log("Switch Conversation Called");
+    let newMessagesLog = [
+      { id: "1", text: testText, isloacal: false },
+      { id: "2", text: "Hi! How are you?", isloacal: true },
+    ];
+    if (csubref && csubref.switchMessages) {
+      csubref.switchMessages(newMessagesLog);
+    } else {
+      console.error("switchMessagesRef is not defined");
     }
   }
 </script>
@@ -46,8 +91,8 @@
           role="button"
           aria-labelledby="Load Conversations"
           tabindex="0"
-          onclick={loadConversations}
-          onkeydown={(e) => e.key === "Enter" && loadConversations()}
+          onclick={switchConversation}
+          onkeydown={(e) => e.key === "Enter" && switchConversation()}
           class="conversation"
         >
           Conversation 1
@@ -57,28 +102,39 @@
         role="button"
         aria-labelledby="Load Conversations"
         tabindex="0"
-        onclick={loadConversations}
-        onkeydown={(e) => e.key === "Enter" && loadConversations()}
+        onclick={switchConversation}
+        onkeydown={(e) => e.key === "Enter" && switchConversation()}
         class="new-chat"
       >
-        <img
-          src={new_chat_icon}
-          alt="New Chat"
-          style="width:30px; height:30px; margin-right:8px;"
-        />
-        <p style="horizontal-align:middle; font-size:16px;">New Chat</p>
+        <IconAddBox />
+        <p style="horizontal-align:middle; font-size:18px;">New Chat</p>
       </div>
     </div>
 
     <div class="main-chat">
-      <div class="chat-header">Conversation 1</div>
-      <div class="chat-holder">
-        <ChatSubpage bind:this={chat_subpage} />
+      <div class="chat-header">
+        {chat_load_info.conversation_name}
       </div>
-      <div class="chat-input">
-        <input type="text" placeholder="Type a message..." />
-        <button onclick={sendText}>Send</button>
-      </div>
+      {#if chat_load_info.loaded}
+        <div class="chat-holder">
+          <ChatSubpage bind:this={chat_subpage} />
+        </div>
+        <div class="chat-input">
+          <input
+            type="text"
+            placeholder="Type a message..."
+            onkeydown={(e) => e.key === "Enter" && sendText()}
+          />
+          <button onclick={sendText} style="display:flex; align-items:center;">
+            <IconUploadFile />Send File
+          </button>
+          <button onclick={sendText} style="display:flex; align-items:center;">
+            <IconSend />Send
+          </button>
+        </div>
+      {:else}
+        <NewChatSubpage bind:this={chat_subpage} />
+      {/if}
     </div>
   </div>
 </main>
@@ -106,7 +162,7 @@
   .sidebar-header {
     width: 100%;
     padding: 20px;
-    font-size: 1.2em;
+    font-size: 20px;
     font-weight: bold;
     text-align: center;
   }
@@ -122,6 +178,7 @@
     margin: 10px;
     border-radius: 10px;
     cursor: pointer;
+    font-size: 18px;
   }
 
   .new-chat {
@@ -148,6 +205,7 @@
   .chat-header {
     padding: 20px;
     font-weight: bold;
+    font-size: 20px;
   }
 
   .chat-holder {
@@ -159,6 +217,7 @@
   .chat-input {
     padding: 15px 20px;
     display: flex;
+    font-size: 18px;
   }
 
   .chat-input input {
@@ -166,6 +225,7 @@
     padding: 10px 15px;
     border-radius: 20px;
     outline: none;
+    font-size: 18px;
   }
 
   .chat-input button {
@@ -174,9 +234,6 @@
     border: none;
     border-radius: 20px;
     cursor: pointer;
-  }
-
-  .chat-input button:hover {
-    background-color: #0e8e6a;
+    font-size: 18px;
   }
 </style>

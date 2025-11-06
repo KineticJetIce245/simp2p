@@ -76,11 +76,11 @@
 }
 
 main {
-  background-color: var(--clr-surface-a0);
+  background-color: var(--clr-surface-a10);
 }
 
 .sidebar {
-  background-color: var(--clr-surface-a10);
+  background-color: var(--clr-surface-a0);
   color: var(--clr-light-a0);
   border-right: 1px solid var(--clr-surface-tonal-a30);
 }
@@ -94,7 +94,7 @@ main {
 }
 
 .main-chat {
-  background-color: var(--clr-surface-a0);
+  background-color: var(--clr-surface-a10);
 }
 
 .chat-header {
@@ -105,7 +105,7 @@ main {
 }
 
 .chat-input {
-  background-color: var(--clr-surface-a0);
+  background-color: var(--clr-surface-a10);
   color: var(--clr-light-a0);
 }
 
@@ -116,12 +116,16 @@ main {
 
 .chat-input input {
   border: 1px solid var(--clr-surface-tonal-a30);
-  background-color: var(--clr-surface-a10);
+  background-color: var(--clr-surface-a20);
   color: var(--clr-light-a0);
 }
 
 .chat-input input:focus {
   border: 1px solid var(--clr-primary-a0);
+}
+
+.chat-input button:hover {
+  background-color: var(--clr-primary-a20);
 }
 
 .local-message {
