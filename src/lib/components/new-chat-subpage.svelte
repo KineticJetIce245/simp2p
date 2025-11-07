@@ -9,7 +9,10 @@
   <hr class="sepline" />
   <div class="conversation-info-form">
     <p class="subTitle">Title</p>
-    <input id="title-input" />
+    <input
+      id="title-input"
+      placeholder="Title of the converstation goes to here..."
+    />
   </div>
   <p class="title">Generate</p>
   <hr class="sepline" />
@@ -40,12 +43,13 @@
     margin: 0;
     padding: 0;
     border-width: 1px;
-    border-color: var(--clr-light-a10);
+    border-color: var(--clr-surface-a10);
   }
 
   .conversation-info-form {
     margin: 0;
-    padding: 10px 20px 10px 20px;
+    padding: 10px 0px 10px 0px;
+    width: 100%;
   }
 
   .subTitle {
@@ -60,10 +64,12 @@
     padding: 7px 10px 7px 10px;
     border-radius: 8px;
     outline: none;
-    font-size: 14px;
+    font-size: 15px;
     border: 1px solid var(--clr-surface-tonal-a30);
     background-color: var(--clr-surface-a20);
     color: var(--clr-light-a0);
+    width: calc(100% - 20px);
+    align-self: center;
   }
 
   #title-input:focus {
