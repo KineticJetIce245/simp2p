@@ -1,18 +1,28 @@
 <svelte:options customElement="chat-subpage" />
 
 <script>
+  import { onMount } from "svelte";
+
   import "$lib/theme.css";
   let messages = $state([]);
 
   export const self = {
     addMessage: (next_message) => {
       messages = [...messages, next_message];
-      console.log("Message added to chat subpage:", messages);
+      console.log("Message added to chat subpage:", next_message);
     },
     switchMessages: (new_messages_log) => {
       messages = new_messages_log;
     },
   };
+
+  onMount(() => {
+    let messageHolder = document.querySelector(".message-holder");
+    var mhobserver = new MutationObserver(() => {
+      messageHolder.scrollIntoView({ behavior: "smooth", block: "end" });
+    });
+    mhobserver.observe(messageHolder, { childList: true });
+  });
 </script>
 
 <div class="message-holder">
@@ -22,9 +32,14 @@
         ? 'local-message'
         : 'remote-message'}"
     >
-      <div class="message-info">
-        <b>{msg.isloacal === true ? "Local" : "Remote"}</b>:
-        {msg.time}
+      <div
+        class="message-info {msg.isloacal === true
+          ? 'local-message'
+          : 'remote-message'}"
+      >
+        <div>
+          <b>{msg.isloacal === true ? "Local" : "Remote"}</b>: {msg.time}
+        </div>
       </div>
       {msg.text}
     </div>
@@ -39,6 +54,7 @@
   }
 
   .message {
+    color: var(--clr-light-a0);
     margin-bottom: 15px;
     padding: 10px 15px;
     border-radius: 10px;
@@ -52,12 +68,14 @@
   }
 
   .local-message {
-    color: var(--clr-light-a0);
     align-self: flex-end;
+    display: flex;
+    flex-direction: column;
   }
 
   .remote-message {
-    color: var(--clr-light-a0);
     align-self: flex-start;
+    display: flex;
+    flex-direction: column;
   }
 </style>

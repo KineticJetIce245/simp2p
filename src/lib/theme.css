@@ -62,17 +62,13 @@
   width: 10px;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--clr-surface-a10);
-}
-
 ::-webkit-scrollbar-thumb {
-  background: var(--clr-surface-a20);
+  background: var(--clr-surface-tonal-a20);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--clr-surface-tonal-a20);
+  background: var(--clr-surface-tonal-a40);
 }
 
 main {
@@ -82,7 +78,6 @@ main {
 .sidebar {
   background-color: var(--clr-surface-a0);
   color: var(--clr-light-a0);
-  border-right: 1px solid var(--clr-surface-tonal-a30);
 }
 
 .conversation:hover {
@@ -93,10 +88,6 @@ main {
   background-color: #ffffff10;
 }
 
-.main-chat {
-  background-color: var(--clr-surface-a10);
-}
-
 .chat-header {
   background-color: var(--clr-surface-tonal-a10);
   color: var(--clr-light-a0);
@@ -105,7 +96,6 @@ main {
 }
 
 .chat-input {
-  background-color: var(--clr-surface-a10);
   color: var(--clr-light-a0);
 }
 

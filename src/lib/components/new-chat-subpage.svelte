@@ -30,6 +30,9 @@
     width: 80%;
     max-width: 600px;
     align-self: center;
+    margin: 20px;
+    border-radius: 20px;
+    background-color: #ffffff10;
   }
 
   .title {

@@ -8,7 +8,7 @@
   import IconUploadFile from "$lib/assets/icons/icon_upload_file.svelte";
 
   const new_chat_load_info = {
-    loaded: false,
+    loaded: true,
     conversation_name: "New Chat",
     conversation_id: null,
   };
@@ -153,10 +153,12 @@
 
   /* Sidebar */
   .sidebar {
+    margin: 10px;
     width: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    border-radius: 20px;
   }
 
   .sidebar-header {
@@ -203,6 +205,8 @@
   }
 
   .chat-header {
+    margin: 10px;
+    border-radius: 20px;
     padding: 20px;
     font-weight: bold;
     font-size: 20px;
@@ -217,7 +221,7 @@
   .chat-input {
     padding: 15px 20px;
     display: flex;
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .chat-input input {
@@ -225,7 +229,7 @@
     padding: 10px 15px;
     border-radius: 20px;
     outline: none;
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .chat-input button {
@@ -234,6 +238,6 @@
     border: none;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
   }
 </style>
