@@ -6,9 +6,13 @@
   import { obtainValideSDPPath } from "$lib/utils/estac.cjs";
 
   async function generateSDP() {
-    console.log("generateSDP clicked");
-    const result = await obtainValideSDPPath(true);
-    console.log("Generated SDP Path:", result);
+    // Determine the conversation ID at this point
+    window.logger.logMessage("[New Chat Subpage]: Generating SDP...");
+    let timestamp = Date.now();
+    const result = await obtainValideSDPPath(true, timestamp);
+    window.logger.logMessage(
+      "[New Chat Subpage]: SDP generated at path: " + result,
+    );
   }
 </script>
 

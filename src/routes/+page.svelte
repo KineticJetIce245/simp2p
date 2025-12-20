@@ -22,7 +22,7 @@
   let csubref;
 
   onMount(() => {
-    console.log("Main Page Mounted.");
+    window.logger.logMessage("[Main Page]: Main page mounted");
   });
 
   // send text function
@@ -30,10 +30,8 @@
     let inputField = document.querySelector(".chat-input input");
     let msg = inputField.value;
     if (msg.trim() === "") {
-      console.warn("Empty message in input field, not sending.");
       return;
     }
-    console.log("Send Text Called");
     await tick(); // wait for any re-rendering
     csubref = chat_subpage.self; // reference is lost if component is re-rendered
     let current_time = Date.now();
@@ -71,7 +69,6 @@
   officia deserunt mollit anim id est laborum.`;
 
   async function switchConversation() {
-    console.log("Switch Conversation Called");
     let newMessagesLog = [
       { id: "1", text: testText, isloacal: false },
       { id: "2", text: "Hi! How are you?", isloacal: true },
@@ -88,7 +85,6 @@
   }
 
   function startNewChat() {
-    console.log("Start New Chat Called");
     clinfo = structuredClone(new_chat_load_info);
   }
 </script>

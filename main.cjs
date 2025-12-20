@@ -49,7 +49,45 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-ipcMain.handle("log-message", async (event, message) => {
+let connection_table = {}
+
+ipcMain.handle("logger-log-message", async (event, message) => {
   logMessage(message);
 });
 
+ipcMain.handle("connection_table-add-connection", async (event, conn_id, connection) => {
+  if (!(connection_table[conn_id])) {
+    connection_table[conn_id] = connection;
+    logMessage(`Connection ID ${conn_id} added to the connection table.`);
+  } else {
+    logMessage(`Connection ID ${conn_id} already exists in the connection table.`);
+    throw new Error(`Connection ID ${conn_id} already exists.`);
+  }
+});
+
+ipcMain.handle("connection_table-remove-connection", async (event, conn_id) => {
+  if (connection_table[conn_id]) {
+    connection_table[conn_id] = null;
+    logMessage(`Connection ID ${conn_id} removed from the connection table.`);
+  } else {
+    logMessage(`Connection ID ${conn_id} not found in the connection table.`);
+  }
+});
+
+ipcMain.handle("connection_table-retrieve-connection", async (event, conn_id) => {
+  if (connection_table[conn_id]) {
+    return connection_table[conn_id];
+  } else {
+    logMessage(`Connection ID ${conn_id} not found in the connection table.`);
+    throw new Error(`Connection ID ${conn_id} not found.`);
+  }
+});
+
+ipcMain.handle("connection_table-update-connection", async (event, conn_id, connection) => {
+  if (connection_table[conn_id]) {
+    connection_table[conn_id] = connection;
+  } else {
+    logMessage(`Connection ID ${conn_id} not found in the connection table. Adding new connection.`);
+    connection_table[conn_id] = connection;
+  }
+});
