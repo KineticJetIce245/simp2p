@@ -2,6 +2,14 @@
 
 <script>
   import "$lib/theme.css";
+  import IconGensdp from "$lib/assets/icons/icon_gensdp.svelte";
+  import { obtainValideSDPPath } from "$lib/utils/estac.cjs";
+
+  async function generateSDP() {
+    console.log("generateSDP clicked");
+    const result = await obtainValideSDPPath(true);
+    console.log("Generated SDP Path:", result);
+  }
 </script>
 
 <div class="form-container">
@@ -14,10 +22,20 @@
       placeholder="Title of the converstation goes to here..."
     />
   </div>
-  <p class="title">Generate</p>
+  <p class="title">Generate SDP</p>
   <hr class="sepline" />
-  <div class="file-generation-form"></div>
-  <p class="title">Receive</p>
+  <div
+    role="button"
+    aria-labelledby="Generate SDP"
+    tabindex="0"
+    onclick={generateSDP}
+    onkeydown={(e) => e.key === "Enter" && generateSDP()}
+    class="file-generation-form"
+  >
+    <IconGensdp scale="2" />
+    <p class="help-text">Click here to generate sdp.</p>
+  </div>
+  <p class="title">Receive SDP</p>
   <hr class="sepline" />
   <div class="file-reception-form"></div>
 </div>
@@ -77,5 +95,33 @@
 
   #title-input:focus {
     border: 1px solid var(--clr-primary-a0);
+  }
+
+  .file-generation-form {
+    margin: 20px;
+    border: 2px dashed var(--clr-surface-tonal-a30);
+    border-radius: 15px;
+    height: 150px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color: var(--clr-surface-tonal-a10);
+    color: var(--clr-surface-tonal-a30);
+    fill: var(--clr-surface-tonal-a30);
+  }
+
+  .file-generation-form:hover {
+    border: 2px dashed var(--clr-primary-a10);
+    background-color: var(--clr-surface-tonal-a20);
+  }
+
+  .file-generation-form:hover {
+    color: var(--clr-primary-a30);
+    fill: var(--clr-primary-a30);
+  }
+
+  .help-text {
+    font-size: 18px;
   }
 </style>

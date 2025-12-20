@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { tick } from "svelte";
 
   import NewChatSubpage from "$lib/components/new-chat-subpage.svelte";
   import ChatSubpage from "$lib/components/chat-subpage.svelte";
@@ -8,21 +9,20 @@
   import IconUploadFile from "$lib/assets/icons/icon_upload_file.svelte";
 
   const new_chat_load_info = {
-    loaded: true,
+    loaded: false,
     conversation_name: "New Chat",
     conversation_id: null,
   };
 
-  let chat_load_info = new_chat_load_info;
+  let clinfo = structuredClone(new_chat_load_info);
 
+  // Only one chat subpage instance is used,
+  // switching conversation only loads new messages into it
   let chat_subpage;
   let csubref;
 
   onMount(() => {
     console.log("Main Page Mounted.");
-
-    // load the reference to the child component
-    csubref = chat_subpage.self;
   });
 
   // send text function
@@ -34,6 +34,8 @@
       return;
     }
     console.log("Send Text Called");
+    await tick(); // wait for any re-rendering
+    csubref = chat_subpage.self; // reference is lost if component is re-rendered
     let current_time = Date.now();
     const newMessage = {
       id: current_time,
@@ -68,17 +70,26 @@
   occaecat cupidatat non proident, sunt in culpa qui
   officia deserunt mollit anim id est laborum.`;
 
-  function switchConversation() {
+  async function switchConversation() {
     console.log("Switch Conversation Called");
     let newMessagesLog = [
       { id: "1", text: testText, isloacal: false },
       { id: "2", text: "Hi! How are you?", isloacal: true },
     ];
+    clinfo.loaded = true;
+    clinfo.conversation_name = "Conversation 1";
+    await tick(); // wait for any re-rendering
+    csubref = chat_subpage.self; // reference is lost if component is re-rendered
     if (csubref && csubref.switchMessages) {
       csubref.switchMessages(newMessagesLog);
     } else {
       console.error("switchMessagesRef is not defined");
     }
+  }
+
+  function startNewChat() {
+    console.log("Start New Chat Called");
+    clinfo = structuredClone(new_chat_load_info);
   }
 </script>
 
@@ -100,10 +111,10 @@
       </div>
       <div
         role="button"
-        aria-labelledby="Load Conversations"
+        aria-labelledby="Start New Chat"
         tabindex="0"
-        onclick={switchConversation}
-        onkeydown={(e) => e.key === "Enter" && switchConversation()}
+        onclick={startNewChat}
+        onkeydown={(e) => e.key === "Enter" && startNewChat()}
         class="new-chat"
       >
         <IconAddBox />
@@ -113,9 +124,9 @@
 
     <div class="main-chat">
       <div class="chat-header">
-        {chat_load_info.conversation_name}
+        {clinfo.conversation_name}
       </div>
-      {#if chat_load_info.loaded}
+      {#if clinfo.loaded}
         <div class="chat-holder">
           <ChatSubpage bind:this={chat_subpage} />
         </div>
