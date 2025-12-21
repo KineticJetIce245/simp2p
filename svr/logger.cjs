@@ -6,7 +6,7 @@ const fs = require('fs');
 const userDataPath = app.getPath('userData');
 const logFile = path.join(userDataPath, 'app.log');
 
-async function logMessage(message) {
+async function logToFile(message, log_type = "Log") {
   let current_time = Date.now();
   let log_time = new Date(current_time).toLocaleString("en-CA", {
     year: "numeric",
@@ -17,8 +17,8 @@ async function logMessage(message) {
     second: "2-digit",
     hour12: false,
   });
-  fs.appendFileSync(logFile, `[${log_time}]: ${message}` + '\n');
+  fs.appendFileSync(logFile, `[${log_type}] [${log_time}] ${message}` + '\n');
   console.log(message);
 }
 
-module.exports = { logMessage };
+module.exports = { logToFile };

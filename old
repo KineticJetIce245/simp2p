@@ -91,7 +91,7 @@ local.onicecandidate = (event) => {
 };
 
 function show_sdp() {
-  valide_ice_candidates = [];
+  let valide_ice_candidates = [];
   log("Found valid ICE candidates");
 
   for (let i = 0; i < local_ice_candidates.length; i++) {

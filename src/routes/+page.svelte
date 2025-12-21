@@ -52,8 +52,9 @@
     if (csubref && csubref.addMessage) {
       csubref.addMessage(newMessage);
     } else {
-      console.error(`Unable to load message on the chat
+      window.logger.logMessage(`[Main Page]: Unable to load message on the chat
       subpage: subpage reference is not defined`);
+      throw new Error("Chat subpage reference is not defined");
     }
     inputField.value = "";
   }

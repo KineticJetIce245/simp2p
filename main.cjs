@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const { logMessage } = require("./svr/logger.cjs");
+const { logToFile } = require("./svr/logger.cjs");
+const { createEstacFile, clearEstacFiles } = require("./svr/estac_file_ops.cjs");
 const path = require("path");
 
 require("electron-reload")(__dirname, {
@@ -46,48 +47,73 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    clearEstacFiles();
+    app.quit();
+  }
 });
 
 let connection_table = {}
 
 ipcMain.handle("logger-log-message", async (event, message) => {
-  logMessage(message);
+  logToFile(message, "Log");
 });
 
-ipcMain.handle("connection_table-add-connection", async (event, conn_id, connection) => {
+ipcMain.handle("logger-warn-message", async (event, message) => {
+  logToFile(message, "Warn");
+});
+
+ipcMain.handle("logger-error-message", async (event, message) => {
+  logToFile(message, "Error");
+});
+
+ipcMain.handle("connection-table-add-connection", async (event, conn_id, connection) => {
   if (!(connection_table[conn_id])) {
     connection_table[conn_id] = connection;
-    logMessage(`Connection ID ${conn_id} added to the connection table.`);
+    logToFile(`[Main]: Connection ID ${conn_id} added to the connection table.`);
   } else {
-    logMessage(`Connection ID ${conn_id} already exists in the connection table.`);
+    logToFile(`[Main]: Connection ID ${conn_id} already exists in the connection table.`, "Error");
     throw new Error(`Connection ID ${conn_id} already exists.`);
   }
 });
 
-ipcMain.handle("connection_table-remove-connection", async (event, conn_id) => {
+ipcMain.handle("connection-table-remove-connection", async (event, conn_id) => {
   if (connection_table[conn_id]) {
     connection_table[conn_id] = null;
-    logMessage(`Connection ID ${conn_id} removed from the connection table.`);
+    logToFile(`[Main]: Connection ID ${conn_id} removed from the connection table.`);
   } else {
-    logMessage(`Connection ID ${conn_id} not found in the connection table.`);
+    logToFile(`[Main]: Connection ID ${conn_id} not found in the connection table.`);
   }
 });
 
-ipcMain.handle("connection_table-retrieve-connection", async (event, conn_id) => {
+ipcMain.handle("connection-table-retrieve-connection", async (event, conn_id) => {
   if (connection_table[conn_id]) {
     return connection_table[conn_id];
   } else {
-    logMessage(`Connection ID ${conn_id} not found in the connection table.`);
+    logToFile(`[Main]: Connection ID ${conn_id} not found in the connection table.`, "Error");
     throw new Error(`Connection ID ${conn_id} not found.`);
   }
 });
 
-ipcMain.handle("connection_table-update-connection", async (event, conn_id, connection) => {
+ipcMain.handle("connection-table-update-connection", async (event, conn_id, connection) => {
   if (connection_table[conn_id]) {
     connection_table[conn_id] = connection;
   } else {
-    logMessage(`Connection ID ${conn_id} not found in the connection table. Adding new connection.`);
+    logToFile(`[Main]: Connection ID ${conn_id} not found in the connection table. Adding new connection.`);
     connection_table[conn_id] = connection;
   }
+});
+
+ipcMain.handle("estac-create-estac-file", async (event, sdp_and_ice, timestamp) => {
+  logToFile(`[Main]: Creating ESTAC file for timestamp ${timestamp}...`);
+  const targetPath = await createEstacFile(sdp_and_ice, timestamp); // returns a promise containing file name
+  logToFile(`[Main]: ESTAC file for timestamp ${timestamp} created at path: ${targetPath}`);
+  return targetPath;
+});
+
+ipcMain.on("estac-drag-start", (event, filePath) => {
+  event.sender.startDrag({
+    file: filePath,
+    icon: "./svr/assets/icon/dragclick.png"
+  });
 });
