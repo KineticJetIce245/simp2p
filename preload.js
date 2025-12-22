@@ -1,10 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("conversation", {
-  sendText: (text) => ipcRenderer.invoke("conversation-send-text", text),
-  sendFile: (filepath) => ipcRenderer.invoke("conversation-send-file", filepath),
-});
-
 contextBridge.exposeInMainWorld("logger", {
   logMessage: (message) => {
     console.log("Preload log:", message);
@@ -20,14 +15,27 @@ contextBridge.exposeInMainWorld("logger", {
   },
 });
 
-contextBridge.exposeInMainWorld("connection-table", {
-  addConnection: (conn_id, connection) => ipcRenderer.invoke("connection-table-add-connection", conn_id, connection),
-  removeConnection: (conn_id) => ipcRenderer.invoke("connection-table-remove-connection", conn_id),
-  retrieveConnection: (conn_id) => ipcRenderer.invoke("connection-table-retrieve-connection", conn_id),
-  updateConnection: (conn_id, connection) => ipcRenderer.invoke("connection-table-update-connection", conn_id, connection),
+contextBridge.exposeInMainWorld("rtchost", {
+  onBstrapConvRequest: (callback) =>
+    ipcRenderer.on("rtchost-on-bstrap-conv-request", async (event, reply) =>
+      ipcRenderer.send(reply, await callback())),
+  onBstrapConvAnswerRequest: (callback) =>
+    ipcRenderer.on("rtchost-on-bstrap-conv-answer-request", async (event, reply, conv_info) =>
+      ipcRenderer.send(reply, await callback(conv_info))),
+  onLoadSdpAndIcesRequest: (callback) =>
+    ipcRenderer.on("rtchost-on-load-estac-request", async (event, reply, conn_info) =>
+      ipcRenderer.send(reply, await callback(conn_info))),
+  bstrapConv: () => ipcRenderer.invoke("rtchost-bstrap-conv"),
+  bstrapConvAnswer: (conv_info) =>
+    ipcRenderer.invoke("rtchost-bstrap-conv-answer", conv_info),
+  loadSdpAndIces: (conn_info) =>
+    ipcRenderer.invoke("rtchost-load-estac", conn_info),
+
 });
 
 contextBridge.exposeInMainWorld("estac", {
-  createEstacFile: (sdp_and_ice, timestamp) => { return ipcRenderer.invoke("estac-create-estac-file", sdp_and_ice, timestamp) },
-  dragStart: (filepath) => ipcRenderer.send("estac-drag-start", filepath),
+  createEstacFile: (connection_info) => { return ipcRenderer.invoke("estac-create-estac-file", connection_info); },
+  dragStart: (file_path) => ipcRenderer.send("estac-drag-start", file_path),
+  dropUrl: (file_url) => ipcRenderer.invoke("estac-drop-url", file_url),
+  dropBuffer: (file_buffer) => ipcRenderer.invoke("estac-drop-buffer", file_buffer),
 });

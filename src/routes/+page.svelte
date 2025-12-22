@@ -6,7 +6,7 @@
   import ChatSubpage from "$lib/components/chat-subpage.svelte";
   import IconAddBox from "$lib/assets/icons/icon_add_box.svelte";
   import IconSend from "$lib/assets/icons/icon_send.svelte";
-  import IconUploadFile from "$lib/assets/icons/icon_upload_file.svelte";
+  import IconUploadFile from "$lib/assets/icons/icon_uploadfile.svelte";
 
   const new_chat_load_info = {
     loaded: false,
