@@ -91,7 +91,6 @@ main {
 .chat-header {
   background-color: var(--clr-surface-tonal-a10);
   color: var(--clr-light-a0);
-  border-bottom: 1px solid var(--clr-surface-tonal-a30);
   text-align: center;
 }
 

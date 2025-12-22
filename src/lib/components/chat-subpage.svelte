@@ -60,6 +60,8 @@
     border-radius: 10px;
     max-width: 70%;
     font-size: 18px;
+    word-break: break-all;
+    align-items: end;
   }
 
   .message-info {

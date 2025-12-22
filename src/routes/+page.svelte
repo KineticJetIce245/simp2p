@@ -1,28 +1,28 @@
 <script>
   import { onMount } from "svelte";
+  import { tick } from "svelte";
 
   import NewChatSubpage from "$lib/components/new-chat-subpage.svelte";
   import ChatSubpage from "$lib/components/chat-subpage.svelte";
   import IconAddBox from "$lib/assets/icons/icon_add_box.svelte";
   import IconSend from "$lib/assets/icons/icon_send.svelte";
-  import IconUploadFile from "$lib/assets/icons/icon_upload_file.svelte";
+  import IconUploadFile from "$lib/assets/icons/icon_uploadfile.svelte";
 
   const new_chat_load_info = {
-    loaded: true,
+    loaded: false,
     conversation_name: "New Chat",
     conversation_id: null,
   };
 
-  let chat_load_info = new_chat_load_info;
+  let clinfo = structuredClone(new_chat_load_info);
 
+  // Only one chat subpage instance is used,
+  // switching conversation only loads new messages into it
   let chat_subpage;
   let csubref;
 
   onMount(() => {
-    console.log("Main Page Mounted.");
-
-    // load the reference to the child component
-    csubref = chat_subpage.self;
+    window.logger.logMessage("[Main Page]: Main page mounted");
   });
 
   // send text function
@@ -30,10 +30,10 @@
     let inputField = document.querySelector(".chat-input input");
     let msg = inputField.value;
     if (msg.trim() === "") {
-      console.warn("Empty message in input field, not sending.");
       return;
     }
-    console.log("Send Text Called");
+    await tick(); // wait for any re-rendering
+    csubref = chat_subpage.self; // reference is lost if component is re-rendered
     let current_time = Date.now();
     const newMessage = {
       id: current_time,
@@ -52,8 +52,9 @@
     if (csubref && csubref.addMessage) {
       csubref.addMessage(newMessage);
     } else {
-      console.error(`Unable to load message on the chat
+      window.logger.logMessage(`[Main Page]: Unable to load message on the chat
       subpage: subpage reference is not defined`);
+      throw new Error("Chat subpage reference is not defined");
     }
     inputField.value = "";
   }
@@ -68,17 +69,24 @@
   occaecat cupidatat non proident, sunt in culpa qui
   officia deserunt mollit anim id est laborum.`;
 
-  function switchConversation() {
-    console.log("Switch Conversation Called");
+  async function switchConversation() {
     let newMessagesLog = [
       { id: "1", text: testText, isloacal: false },
       { id: "2", text: "Hi! How are you?", isloacal: true },
     ];
+    clinfo.loaded = true;
+    clinfo.conversation_name = "Conversation 1";
+    await tick(); // wait for any re-rendering
+    csubref = chat_subpage.self; // reference is lost if component is re-rendered
     if (csubref && csubref.switchMessages) {
       csubref.switchMessages(newMessagesLog);
     } else {
       console.error("switchMessagesRef is not defined");
     }
+  }
+
+  function startNewChat() {
+    clinfo = structuredClone(new_chat_load_info);
   }
 </script>
 
@@ -100,10 +108,10 @@
       </div>
       <div
         role="button"
-        aria-labelledby="Load Conversations"
+        aria-labelledby="Start New Chat"
         tabindex="0"
-        onclick={switchConversation}
-        onkeydown={(e) => e.key === "Enter" && switchConversation()}
+        onclick={startNewChat}
+        onkeydown={(e) => e.key === "Enter" && startNewChat()}
         class="new-chat"
       >
         <IconAddBox />
@@ -113,9 +121,9 @@
 
     <div class="main-chat">
       <div class="chat-header">
-        {chat_load_info.conversation_name}
+        {clinfo.conversation_name}
       </div>
-      {#if chat_load_info.loaded}
+      {#if clinfo.loaded}
         <div class="chat-holder">
           <ChatSubpage bind:this={chat_subpage} />
         </div>
