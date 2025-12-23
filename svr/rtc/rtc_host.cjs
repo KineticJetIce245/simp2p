@@ -70,18 +70,10 @@ async function genOfferSdpAndIce(channels) {
 
   const conn = new RTCPeerConnection({ iceServers: [{ urls: ice_server_url }] });
 
-  channels.forEach((name) => {
-    conn.createDataChannel(name);
+  channels.forEach((channel) => {
+    let ch = conn.createDataChannel(channel.name);
+    channel.setup(ch);
   });
-
-  conn.ondatachannel = (event) => {
-    if (event.channel.label in channels) {
-      window.logger.logMessage(`[RTC Host]: Data channel "${event.channel.label}" established.`);
-      channels[event.channel.label].setup(event.channel);
-    } else {
-      window.logger.warnMessage(`[RTC Host]: Unknown data channel "${event.channel.label}" received.`);
-    }
-  }
 
   await conn.setLocalDescription(await conn.createOffer());
 
