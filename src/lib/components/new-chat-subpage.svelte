@@ -82,11 +82,11 @@
     try {
       const result = await window.rtchost.bstrapConvAnswer(conversation_info);
       window.logger.logMessage(
-        `[New Chat Subpage]: SDP generated successfully at: ${result}.`,
+        `[New Chat Subpage]: SDP generated successfully at: ${result.estac_path}.`,
       );
       gen_sdp_state = "gen-sdp-allow-drag";
       await tick();
-      setDragComp(result, gen_sdp_state);
+      setDragComp(result.estac_path, gen_sdp_state);
     } catch (error) {
       window.logger.logMessage(
         `[New Chat Subpage]: Error during SDP generation on drop: ${error}`,
