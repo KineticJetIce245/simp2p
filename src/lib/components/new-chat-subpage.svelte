@@ -27,7 +27,7 @@
         try {
           const result = await window.rtchost.bstrapConv();
           window.logger.logMessage(
-            `[New Chat Subpage]: SDP generated successfully at: ${result}.`,
+            `[New Chat Subpage]: SDP generated successfully at: ${result.estac_path}.`,
           );
           conversation_id = result.conv_id;
           gen_sdp_state = "gen-sdp-allow-drag";
@@ -106,6 +106,7 @@
       );
       isValidConversation = true;
       window.rtchost.loadSdpAndIces(conversation_info);
+      // At here, the connection should be established
     } else {
       window.logger.logMessage(
         "[New Chat Subpage]: Invalid conversation info received.",

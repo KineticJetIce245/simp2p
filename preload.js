@@ -30,7 +30,6 @@ contextBridge.exposeInMainWorld("rtchost", {
     ipcRenderer.invoke("rtchost-bstrap-conv-answer", conv_info),
   loadSdpAndIces: (conn_info) =>
     ipcRenderer.invoke("rtchost-load-estac", conn_info),
-
 });
 
 contextBridge.exposeInMainWorld("estac", {
