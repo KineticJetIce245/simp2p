@@ -7,7 +7,16 @@ let conv_table = {}; // Stores active conversations
 async function bstrapConv() {
   let conv_id = Date.now();
   try {
-    let estac_result = await genOfferSdpAndIce(["bootstrap"]);
+    let estac_result = await genOfferSdpAndIce([{
+      name: "bootstrap", setup: (channel) => {
+        channel.onopen = () => {
+          window.logger.logMessage(`RTC Channel "bootstrap" opened for connection ID ${conv_id}.`);
+        };
+        channel.onmessage = (event) => {
+          window.logger.logMessage(`RTC Channel "bootstrap" message for connection ID ${conv_id}: ${event.data}`);
+        };
+      }
+    }]);
     conv_table[conv_id] = { name: "", bootstrap: estac_result.rtcpc };
     window.logger.logMessage(`[RTC Host]: Offer ESTAC generation successful for connection ID ${conv_id}.`);
     return {
@@ -53,16 +62,25 @@ async function genEstacFile(conv_info) {
 /**
   * Generate SDP offer and ICE candidates for RTC Peer Connection.
   */
-async function genOfferSdpAndIce(channel_names) {
+async function genOfferSdpAndIce(channels) {
   let candidates = [];
   window.logger.logMessage("[RTC Host]: Starting SDP Offer generation...");
   let ice_server_url = "stun:stun.l.google.com:19302"
 
   const conn = new RTCPeerConnection({ iceServers: [{ urls: ice_server_url }] });
 
-  channel_names.forEach((name) => {
+  channels.forEach((name) => {
     conn.createDataChannel(name);
   });
+
+  conn.ondatachannel = (event) => {
+    if (event.channel.label in channels) {
+      window.logger.logMessage(`[RTC Host]: Data channel "${event.channel.label}" established.`);
+      channels[event.channel.label].setup(event.channel);
+    } else {
+      window.logger.warnMessage(`[RTC Host]: Unknown data channel "${event.channel.label}" received.`);
+    }
+  }
 
   await conn.setLocalDescription(await conn.createOffer());
 

@@ -141,7 +141,9 @@
           </button>
         </div>
       {:else}
-        <NewChatSubpage bind:this={chat_subpage} />
+        <div class="newsubpage-holder">
+          <NewChatSubpage bind:this={chat_subpage} />
+        </div>
       {/if}
     </div>
   </div>
@@ -248,5 +250,15 @@
     border-radius: 20px;
     cursor: pointer;
     font-size: 16px;
+  }
+
+  .newsubpage-holder {
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
