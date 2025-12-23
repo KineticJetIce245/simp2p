@@ -9,6 +9,7 @@ async function bstrapConv() {
   try {
     let estac_result = await genOfferSdpAndIce([{
       name: "bootstrap", setup: (channel) => {
+        window.logger.logMessage(`[RTC Host]: Setting up RTC Channel "bootstrap" for connection ID ${conv_id}.`);
         channel.onopen = () => {
           window.logger.logMessage(`RTC Channel "bootstrap" opened for connection ID ${conv_id}.`);
         };
