@@ -76,9 +76,11 @@ async function genOfferSdpAndIce(conv_id, channels) {
     channel.setup(ch);
   });
 
+  /*
   conn.ondatachannel = (event) => {
     channels.find((channel) => channel.name === event.channel.label)?.setup(event.channel);
   }
+  */
 
   conn.onconnectionstatechange = () => {
     window.logger.logMessage(`[RTC Host]: Connection state changed to ${conn.connectionState} for connection ${conv_id}.`);
