@@ -105,7 +105,7 @@
         "[New Chat Subpage]: Valid conversation info received.",
       );
       isValidConversation = true;
-      window.rtchost.loadSdpAndIces(conversation_info);
+      await window.rtchost.loadSdpAndIces(conversation_info);
       // At here, the connection should be established
     } else {
       window.logger.logMessage(
