@@ -5,19 +5,19 @@ const path = require('path');
 const fs = require('fs');
 
 // Path for app-specific data
-const userDataPath = app.getPath('temp');
+const userDataPath = path.join(app.getPath('temp'), "simp2p");
 
-async function createEstacFile(conn_info) {
-  logToFile(`[estac_file_ops.cjs]: Creating ESTAC file at timestamp ${conn_info.tmsp}`, "Log");
-  const targetFilePath = path.join(userDataPath, "simp2p", `local${conn_info.tmsp}`);
-  const serializedData = encode(conn_info);
+async function createEstacFile(conv_info) {
+  logToFile(`[estac_file_ops.cjs]: Creating ESTAC file at timestamp ${conv_info.conn_id}`, "Log");
+  const targetFilePath = path.join(userDataPath, "estac", `local${conv_info.conv_id}`);
+  const serializedData = encode(conv_info);
   try {
     fs.mkdirSync(path.dirname(targetFilePath), { recursive: true });
     fs.writeFileSync(targetFilePath, serializedData);
-    logToFile(`[estac_file_ops.cjs]: ESTAC file for ${conn_info.tmsp} created at ${targetFilePath}`, "Log");
+    logToFile(`[estac_file_ops.cjs]: ESTAC file for ${conv_info.conv_id} created at ${targetFilePath}`, "Log");
     return targetFilePath;
   } catch (error) {
-    logToFile(`[estac_file_ops.cjs]: Error creating ESTAC file for ${conn_info.tmsp} (${error})`, "Error");
+    logToFile(`[estac_file_ops.cjs]: Error creating ESTAC file for ${conv_info.conv_id} (${error})`, "Error");
     throw error;
   }
 }
@@ -41,7 +41,7 @@ async function receiveEstacBuffer(file_buffer) {
 
 async function clearEstacFiles() {
   logToFile(`[estac_file_ops.cjs]: Clearing ESTAC files...`, "Log");
-  const estacDir = path.join(userDataPath, "simp2p");
+  const estacDir = path.join(userDataPath, "estac");
   try {
     fs.rmSync(estacDir, { recursive: true });
   } catch (error) {
@@ -51,7 +51,7 @@ async function clearEstacFiles() {
 }
 
 async function removeEstacFile(conn_id) {
-  const target_path = path.join(userDataPath, "simp2p", `local${conn_id}`);
+  const target_path = path.join(userDataPath, "estac", `local${conn_id}`);
   logToFile(`[estac_file_ops.cjs]: Removing ESTAC file at path: ${target_path}`, "Log");
   try {
     fs.rmSync(target_path, { recursive: true });
