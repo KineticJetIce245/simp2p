@@ -77,7 +77,7 @@
     window.logger.logMessage(
       "[New Chat Subpage]: Generating SDP, this is the first time...",
     );
-    conversation_id = conversation_info.tmsp;
+    conversation_id = conversation_info.conv_id;
 
     try {
       const result = await window.rtchost.bstrapConvAnswer(conversation_info);
@@ -100,7 +100,7 @@
     window.logger.logMessage(
       "[New Chat Subpage]: Checking validity of dropped conversation info...",
     );
-    if (conversation_id === conversation_info.tmsp) {
+    if (conversation_id === conversation_info.conv_id) {
       window.logger.logMessage(
         "[New Chat Subpage]: Valid conversation info received.",
       );
@@ -175,7 +175,7 @@
         drop_sdp_state = "drop-sdp-disabled"; // Readable information obtained
         await tick();
         window.logger.logMessage(
-          `[New Chat Subpage]: SDP dropped successfully: ${conversation_info.tmsp}`,
+          `[New Chat Subpage]: SDP dropped successfully: ${conversation_info.conv_id}.`,
         );
 
         if (!conversation_info) {
