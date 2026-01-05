@@ -170,6 +170,29 @@ async function genEstacFile(conv_id) {
   }
 }
 
+// new function for serializing connection request for new channels
+async function serializeConnRequest(conv_id, channel_type) { }
+
+async function requestNewConns(conv_id, channel_type) {
+  try {
+    let conn_name = "";
+    switch (channel_type) {
+      case "chat":
+        conn_name = `chat_${Date.now()}`;
+        break;
+      case "data":
+        conn_name = `data_${Date.now()}`;
+        break;
+      default:
+        throw new Error(`Unknown channel type: ${channel_type}`);
+    }
+    await genOfferSdpAndIce(conv_id, conn_name, [channel_type]); // writes directly into conv_table
+  } catch (error) {
+    window.logger.errorMessage(`[RTC Host]: Error generating offer ESTAC (${error}).`);
+    throw error;
+  }
+}
+
 /**
   * Generate SDP offer and ICE candidates for RTC Peer Connection.
   */
@@ -192,6 +215,8 @@ async function genOfferSdpAndIce(conv_id, conn_name, channels) {
     window.logger.logMessage(`[RTC Host]: Connection state changed to ${conn.connectionState} for connection ${conv_id}.`);
     if (conn.connectionState === "connected") {
       window.logger.logMessage(`[RTC Host]: Peer connection established for connection ${conv_id}!`);
+      // send the request for chat connection
+      requestNewConns(conv_id, "chat");
     }
     if (conn.connectionState === "failed" || conn.connectionState === "disconnected") {
       window.logger.warnMessage(`[RTC Host]: Peer connection failed/disconnected for connection ${conv_id}.`);
