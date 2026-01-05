@@ -8,7 +8,7 @@ async function bstrapConv() {
   let conv_id = Date.now();
   try {
     let estac_result = await genOfferSdpAndIce(conv_id, [{
-      name: "bootstrap", setup: (channel) => {
+      conn_id: "bootstrap", setup: (channel) => {
         window.logger.logMessage(`[RTC Host]: Setting up RTC Channel "bootstrap" for connection ID ${conv_id}.`);
         channel.onopen = () => {
           window.logger.logMessage(`[RTC Host]: RTC Channel "bootstrap" opened for connection ID ${conv_id}.`);
@@ -18,11 +18,11 @@ async function bstrapConv() {
         };
       }
     }]);
-    conv_table[conv_id] = { name: "", bootstrap: estac_result.rtcpc };
+    conv_table[conv_id] = { conv_name: "", bootstrap: estac_result.rtcpc };
     window.logger.logMessage(`[RTC Host]: Offer ESTAC generation successful for connection ID ${conv_id}.`);
     return {
       conv_id: conv_id,
-      estac_path: await genEstacFile({ tmsp: conv_id, name: "bootstrap", sdp: estac_result.sdp, ices: estac_result.ices }),
+      estac_path: await genEstacFile({ tmsp: conv_id, conn_id: "bootstrap", sdp: estac_result.sdp, ices: estac_result.ices }),
     };
   } catch (error) {
     window.logger.errorMessage(`[RTC Host]: Error generating offer ESTAC (${error}).`);
@@ -34,12 +34,12 @@ async function answerBstrapConv(estac) {
   let conv_id = estac.tmsp;
   window.logger.logMessage(`[RTC Host]: Answering bootstrap connection for ID ${conv_id}...`);
   try {
-    let estac_result = await genAnswerSdpAndIce({ sdp: estac.sdp, ices: estac.ices });
+    let estac_result = await genAnswerSdpAndIce({ tmsp: conv_id, conn_id: "bootstrap", sdp: estac.sdp, ices: estac.ices });
     conv_table[conv_id] = { bootstrap: estac_result.rtcpc };
     window.logger.logMessage(`[RTC Host]: Answer ESTAC generation successful for connection ID ${conv_id}.`);
     return {
       conv_id: conv_id,
-      estac_path: await genEstacFile({ tmsp: conv_id, name: "bootstrap", sdp: estac_result.sdp, ices: estac_result.ices }),
+      estac_path: await genEstacFile({ tmsp: conv_id, conn_id: "bootstrap", sdp: estac_result.sdp, ices: estac_result.ices }),
     };
   } catch (error) {
     window.logger.errorMessage(`[RTC Host]: Error generating answer ESTAC (${error}).`);
@@ -71,16 +71,10 @@ async function genOfferSdpAndIce(conv_id, channels) {
   const conn = new RTCPeerConnection({ iceServers: [{ urls: ice_server_url }] });
 
   channels.forEach((channel) => {
-    window.logger.logMessage(`[RTC Host]: Creating RTC Channel "${channel.name}" for connection ID ${conv_id}.`);
-    let ch = conn.createDataChannel(channel.name);
+    window.logger.logMessage(`[RTC Host]: Creating RTC Channel "${channel.conn_id}" for connection ID ${conv_id}.`);
+    let ch = conn.createDataChannel(channel.conn_id);
     channel.setup(ch);
   });
-
-  /*
-  conn.ondatachannel = (event) => {
-    channels.find((channel) => channel.name === event.channel.label)?.setup(event.channel);
-  }
-  */
 
   conn.onconnectionstatechange = () => {
     window.logger.logMessage(`[RTC Host]: Connection state changed to ${conn.connectionState} for connection ${conv_id}.`);
@@ -132,6 +126,10 @@ async function genAnswerSdpAndIce(offer) {
   const answer = await conn.createAnswer();
   await conn.setLocalDescription(answer);
 
+  /*
+  conn.ondatachannel(event)=>{}
+  */
+
   try {
     await gatherIces(100, conn, candidates);
   } catch (error) {
@@ -181,7 +179,7 @@ async function gatherIces(timeout, rtcpc, candidates) {
   */
 async function loadSdpAndIces(conn_info) {
   window.logger.logMessage(`[RTC Host]: Loading remote SDP and ICE candidates for connection ID ${conn_info.tmsp}...`);
-  const rtcpc = conv_table[conn_info.tmsp][conn_info.name];
+  const rtcpc = conv_table[conn_info.tmsp][conn_info.conn_id];
   rtcpc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: conn_info.sdp }));
   conn_info.ices.forEach(async (ice) =>
     await rtcpc.addIceCandidate(new RTCIceCandidate(ice)));
