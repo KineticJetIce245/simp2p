@@ -9,7 +9,7 @@ const userDataPath = path.join(app.getPath('temp'), "simp2p");
 
 async function createEstacFile(conv_info) {
   logToFile(`[estac_file_ops.cjs]: Creating ESTAC file at timestamp ${conv_info.conv_id}`, "Log");
-  const targetFilePath = path.join(userDataPath, "estac", `local${conv_info.conv_id}`);
+  const targetFilePath = path.join(userDataPath, "estac", `${conv_info.isoffer ? "offer" : "answer"}${conv_info.conv_id}`);
   const serializedData = encode(conv_info);
   try {
     fs.mkdirSync(path.dirname(targetFilePath), { recursive: true });

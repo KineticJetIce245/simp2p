@@ -23,13 +23,18 @@ contextBridge.exposeInMainWorld("rtchost", {
     ipcRenderer.on("rtchost-on-bstrap-conv-answer-request", async (event, reply, conv_info) =>
       ipcRenderer.send(reply, await callback(conv_info))),
   onLoadSdpAndIcesRequest: (callback) =>
-    ipcRenderer.on("rtchost-on-load-estac-request", async (event, reply, conn_info) =>
-      ipcRenderer.send(reply, await callback(conn_info))),
+    ipcRenderer.on("rtchost-on-load-estac-request", async (event, reply, conv_info) =>
+      ipcRenderer.send(reply, await callback(conv_info))),
+  onNewConnRequest: (callback) =>
+    ipcRenderer.on("rtchost-on-new-conn-request", async (event, reply, conv_id, channel_type) =>
+      ipcRenderer.send(reply, await callback(conv_id, channel_type))),
   bstrapConv: () => ipcRenderer.invoke("rtchost-bstrap-conv"),
   bstrapConvAnswer: (conv_info) =>
     ipcRenderer.invoke("rtchost-bstrap-conv-answer", conv_info),
   loadSdpAndIces: (conn_info) =>
     ipcRenderer.invoke("rtchost-load-estac", conn_info),
+  newConnection: (conv_id, channel_type) =>
+    ipcRenderer.invoke("rtchost-new-connection", conv_id, channel_type),
 });
 
 contextBridge.exposeInMainWorld("estac", {
@@ -37,6 +42,6 @@ contextBridge.exposeInMainWorld("estac", {
   dragStart: (file_path) => ipcRenderer.send("estac-drag-start", file_path),
   dropUrl: (file_url) => ipcRenderer.invoke("estac-drop-url", file_url),
   dropBuffer: (file_buffer) => ipcRenderer.invoke("estac-drop-buffer", file_buffer),
-  encode: (data) => ipcRenderer.invoke("estac-encode", data),
-  decode: (data) => ipcRenderer.invoke("estac-decode", data),
+  encode: (data) => { return ipcRenderer.invoke("estac-encode", data) },
+  decode: (data) => { return ipcRenderer.invoke("estac-decode", data) },
 });

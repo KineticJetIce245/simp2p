@@ -18,6 +18,13 @@
   let conversation_id = null;
   let isValidConversation = false;
 
+  function resetStates() {
+    gen_sdp_state = "gen-sdp-enabled";
+    drop_sdp_state = "drop-sdp-enabled";
+    conversation_id = null;
+    isValidConversation = false;
+  }
+
   async function genSDPOnClick() {
     switch (gen_sdp_state) {
       case "gen-sdp-enabled": {
@@ -105,9 +112,19 @@
         "[New Chat Subpage]: Valid conversation info received.",
       );
       isValidConversation = true;
-      await window.rtchost.loadSdpAndIces(conversation_info);
+      try {
+        await window.rtchost.loadSdpAndIces(conversation_info);
+      } catch (error) {
+        window.logger.logMessage(
+          `[New Chat Subpage]: Error loading SDP and ICEs: ${error}`,
+        );
+        await alert("Failed to load the dropped Estac file. Please try again.");
+        resetStates();
 
+        return;
+      }
       // At here, the connection should be established
+      await window.rtchost.newConnection(conversation_id, "chat");
     } else {
       window.logger.logMessage(
         "[New Chat Subpage]: Invalid conversation info received.",

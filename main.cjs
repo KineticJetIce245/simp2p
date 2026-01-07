@@ -126,3 +126,11 @@ ipcMain.handle("rtchost-load-estac", async (event, conn_info) => {
     rtc_host.webContents.send('rtchost-on-load-estac-request', reply, conn_info);
   })
 });
+
+ipcMain.handle("rtchost-new-connection", async (event, conv_id, channel_type) => {
+  return await new Promise((resolve) => {
+    const reply = `rtchost-new-connection-${Date.now()}`;
+    ipcMain.once(reply, (event, data) => resolve(data));
+    rtc_host.webContents.send('rtchost-on-new-conn-request', reply, conv_id, channel_type);
+  })
+});
