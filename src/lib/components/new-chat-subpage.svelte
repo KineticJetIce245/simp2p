@@ -42,9 +42,10 @@
           setDragComp(result.estac_path, gen_sdp_state);
         } catch (error) {
           window.logger.logMessage(
-            `[New Chat Subpage]: Error during SDP generation: ${error}`,
+            `[New Chat Subpage]: Error during SDP generation: (${error.message}).`,
           );
-          gen_sdp_state = "gen-sdp-enabled"; // re-enable generation
+          alert(`Failed to generate the Estac file, reason: ${error.message}`);
+          resetStates();
           return;
         }
         break;
@@ -96,9 +97,10 @@
       setDragComp(result.estac_path, gen_sdp_state);
     } catch (error) {
       window.logger.logMessage(
-        `[New Chat Subpage]: Error during SDP generation on drop: ${error}`,
+        `[New Chat Subpage]: Error during SDP generation on drop: ${error.message}`,
       );
-      gen_sdp_state = "gen-sdp-enabled"; // re-enable generation
+      alert(`Failed to generate the Estac file, reason: ${error.message}`);
+      resetStates();
       return;
     }
   }
@@ -116,9 +118,9 @@
         await window.rtchost.loadSdpAndIces(conversation_info);
       } catch (error) {
         window.logger.logMessage(
-          `[New Chat Subpage]: Error loading SDP and ICEs: ${error}`,
+          `[New Chat Subpage]: Error loading SDP and ICEs: ${error.message}`,
         );
-        await alert("Failed to load the dropped Estac file. Please try again.");
+        alert(`Failed to generate the Estac file, reason: ${error.message}`);
         resetStates();
 
         return;
@@ -209,7 +211,7 @@
         }
       } catch (error) {
         window.logger.logMessage(
-          `[New Chat Subpage]: Error during SDP drop: (${error})`,
+          `[New Chat Subpage]: Error during SDP drop: (${error.message})`,
         );
         drop_sdp_state = "drop-sdp-illegal-drop";
         await tick();

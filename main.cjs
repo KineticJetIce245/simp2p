@@ -104,33 +104,45 @@ ipcMain.handle("estac-decode", async (event, data) => {
 });
 
 ipcMain.handle("rtchost-bstrap-conv", async () => {
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
     const reply = `rtchost-bstrap-conv-${Date.now()}`;
-    ipcMain.once(reply, (event, data) => resolve(data));
-    rtc_host.webContents.send('rtchost-on-bstrap-conv-request', reply);
-  })
+    ipcMain.once(reply, (event, result) => {
+      if (result.success) resolve(result.data);
+      else reject(new Error(result.error));
+    });
+    rtc_host.webContents.send("rtchost-on-bstrap-conv-request", reply);
+  });
 });
 
 ipcMain.handle("rtchost-bstrap-conv-answer", async (event, conv_info) => {
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
     const reply = `rtchost-bstrap-conv-answer-${Date.now()}`;
-    ipcMain.once(reply, (event, data) => resolve(data));
+    ipcMain.once(reply, (event, result) => {
+      if (result.success) resolve(result.data);
+      else reject(new Error(result.error));
+    });
     rtc_host.webContents.send('rtchost-on-bstrap-conv-answer-request', reply, conv_info);
   })
 });
 
 ipcMain.handle("rtchost-load-estac", async (event, conn_info) => {
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
     const reply = `rtchost-load-estac-${Date.now()}`;
-    ipcMain.once(reply, (event, data) => resolve(data));
+    ipcMain.once(reply, (event, result) => {
+      if (result.success) resolve(result.data);
+      else reject(new Error(result.error));
+    });
     rtc_host.webContents.send('rtchost-on-load-estac-request', reply, conn_info);
   })
 });
 
 ipcMain.handle("rtchost-new-connection", async (event, conv_id, channel_type) => {
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
     const reply = `rtchost-new-connection-${Date.now()}`;
-    ipcMain.once(reply, (event, data) => resolve(data));
+    ipcMain.once(reply, (event, result) => {
+      if (result.success) resolve(result.data);
+      else reject(new Error(result.error));
+    });
     rtc_host.webContents.send('rtchost-on-new-conn-request', reply, conv_id, channel_type);
   })
 });

@@ -17,17 +17,42 @@ contextBridge.exposeInMainWorld("logger", {
 
 contextBridge.exposeInMainWorld("rtchost", {
   onBstrapConvRequest: (callback) =>
-    ipcRenderer.on("rtchost-on-bstrap-conv-request", async (event, reply) =>
-      ipcRenderer.send(reply, await callback())),
+    ipcRenderer.on("rtchost-on-bstrap-conv-request", async (event, reply) => {
+      try {
+        const result = await callback();
+        ipcRenderer.send(reply, { success: true, data: result });
+      } catch (error) {
+        ipcRenderer.send(reply, { success: false, error: error?.message ?? String(error) });
+      }
+    }),
   onBstrapConvAnswerRequest: (callback) =>
-    ipcRenderer.on("rtchost-on-bstrap-conv-answer-request", async (event, reply, conv_info) =>
-      ipcRenderer.send(reply, await callback(conv_info))),
+    ipcRenderer.on("rtchost-on-bstrap-conv-answer-request", async (event, reply, conv_info) => {
+      try {
+        const result = await callback(conv_info);
+        ipcRenderer.send(reply, { success: true, data: result });
+      } catch (error) {
+        ipcRenderer.send(reply, { success: false, error: error?.message ?? String(error) });
+      }
+    }),
   onLoadSdpAndIcesRequest: (callback) =>
-    ipcRenderer.on("rtchost-on-load-estac-request", async (event, reply, conv_info) =>
-      ipcRenderer.send(reply, await callback(conv_info))),
+    ipcRenderer.on("rtchost-on-load-estac-request", async (event, reply, conv_info) => {
+      try {
+        const result = await callback(conv_info);
+        ipcRenderer.send(reply, { success: true, data: result });
+      } catch (error) {
+        ipcRenderer.send(reply, { success: false, error: error?.message ?? String(error) });
+      }
+    }),
   onNewConnRequest: (callback) =>
-    ipcRenderer.on("rtchost-on-new-conn-request", async (event, reply, conv_id, channel_type) =>
-      ipcRenderer.send(reply, await callback(conv_id, channel_type))),
+    ipcRenderer.on("rtchost-on-new-conn-request", async (event, reply, conv_id, channel_type) => {
+      try {
+        const result = await callback(conv_id, channel_type);
+        ipcRenderer.send(reply, { success: true, data: result });
+      } catch (error) {
+        ipcRenderer.send(reply, { success: false, error: error?.message ?? String(error) });
+      }
+    }
+    ),
   bstrapConv: () => ipcRenderer.invoke("rtchost-bstrap-conv"),
   bstrapConvAnswer: (conv_info) =>
     ipcRenderer.invoke("rtchost-bstrap-conv-answer", conv_info),
