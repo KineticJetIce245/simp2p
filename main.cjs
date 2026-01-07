@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { logToFile } = require("./svr/main/logger.cjs");
-const { createEstacFile, clearEstacFiles, receiveEstacBuffer, receiveEstacUrl, removeEstacFile } = require("./svr/main/estac_file_ops.cjs");
+const { createEstacFile, clearEstacFiles, receiveEstacBuffer, receiveEstacUrl, removeEstacFile, encodeData, decodeData } = require("./svr/main/estac_file_ops.cjs");
 const path = require("path");
 
 require("electron-reload")(__dirname, {
@@ -73,10 +73,10 @@ ipcMain.handle("logger-error-message", async (event, message) => {
   logToFile(message, "Error");
 });
 
-ipcMain.handle("estac-create-estac-file", async (event, conn_info) => {
-  logToFile(`[Main]: Creating ESTAC file for timestamp ${conn_info.tmsp}...`);
-  const targetPath = await createEstacFile(conn_info); // returns a promise containing file name
-  logToFile(`[Main]: ESTAC file for timestamp ${conn_info.timestamp} created at path: ${targetPath}`);
+ipcMain.handle("estac-create-estac-file", async (event, conv_info) => {
+  logToFile(`[Main]: Creating ESTAC file for timestamp ${conv_info.conv_id}...`);
+  const targetPath = await createEstacFile(conv_info); // returns a promise containing file name
+  logToFile(`[Main]: ESTAC file for timestamp ${conv_info.conv_id} created at path: ${targetPath}`);
   return targetPath;
 });
 
@@ -93,6 +93,14 @@ ipcMain.handle("estac-drop-url", async (event, file_url) => {
 
 ipcMain.handle("estac-drop-buffer", async (event, file_path) => {
   return await receiveEstacBuffer(file_path);
+});
+
+ipcMain.handle("estac-encode", async (event, data) => {
+  return encodeData(data);
+});
+
+ipcMain.handle("estac-decode", async (event, data) => {
+  return decodeData(data);
 });
 
 ipcMain.handle("rtchost-bstrap-conv", async () => {

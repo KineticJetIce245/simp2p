@@ -106,6 +106,7 @@
       );
       isValidConversation = true;
       await window.rtchost.loadSdpAndIces(conversation_info);
+
       // At here, the connection should be established
     } else {
       window.logger.logMessage(

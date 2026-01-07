@@ -37,4 +37,6 @@ contextBridge.exposeInMainWorld("estac", {
   dragStart: (file_path) => ipcRenderer.send("estac-drag-start", file_path),
   dropUrl: (file_url) => ipcRenderer.invoke("estac-drop-url", file_url),
   dropBuffer: (file_buffer) => ipcRenderer.invoke("estac-drop-buffer", file_buffer),
+  encode: (data) => ipcRenderer.invoke("estac-encode", data),
+  decode: (data) => ipcRenderer.invoke("estac-decode", data),
 });

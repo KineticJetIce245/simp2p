@@ -8,7 +8,7 @@ const fs = require('fs');
 const userDataPath = path.join(app.getPath('temp'), "simp2p");
 
 async function createEstacFile(conv_info) {
-  logToFile(`[estac_file_ops.cjs]: Creating ESTAC file at timestamp ${conv_info.conn_id}`, "Log");
+  logToFile(`[estac_file_ops.cjs]: Creating ESTAC file at timestamp ${conv_info.conv_id}`, "Log");
   const targetFilePath = path.join(userDataPath, "estac", `local${conv_info.conv_id}`);
   const serializedData = encode(conv_info);
   try {
@@ -61,4 +61,12 @@ async function removeEstacFile(conn_id) {
   }
 }
 
-module.exports = { createEstacFile, clearEstacFiles, receiveEstacBuffer, receiveEstacUrl, removeEstacFile };
+function encodeData(data) {
+  return encode(data);
+}
+
+function decodeData(data) {
+  return decode(data);
+}
+
+module.exports = { createEstacFile, clearEstacFiles, receiveEstacBuffer, receiveEstacUrl, removeEstacFile, encodeData, decodeData };
