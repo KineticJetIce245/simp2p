@@ -13,6 +13,8 @@
   import { onDestroy } from "svelte";
   import { browser } from "$app/environment";
 
+  export let ready = () => {};
+
   let gen_sdp_state = "gen-sdp-enabled";
   let drop_sdp_state = "drop-sdp-enabled";
   let conversation_id = null;
@@ -113,20 +115,28 @@
       window.logger.logMessage(
         "[New Chat Subpage]: Valid conversation info received.",
       );
-      isValidConversation = true;
       try {
         await window.rtchost.loadSdpAndIces(conversation_info);
       } catch (error) {
         window.logger.logMessage(
           `[New Chat Subpage]: Error loading SDP and ICEs: ${error.message}`,
         );
-        alert(`Failed to generate the Estac file, reason: ${error.message}`);
+        alert(`Failed to load the Estac file, reason: ${error.message}`);
         resetStates();
-
         return;
       }
       // At here, the connection should be established
-      await window.rtchost.newConnection(conversation_id, "chat");
+      try {
+        await window.rtchost.newConnection(conversation_id, "chat");
+      } catch (error) {
+        window.logger.logMessage(
+          `[New Chat Subpage]: Error establishing new connection: ${error.message}`,
+        );
+        alert(`Failed to establish the connection, reason: ${error.message}`);
+        resetStates();
+        return;
+      }
+      isValidConversation = true;
     } else {
       window.logger.logMessage(
         "[New Chat Subpage]: Invalid conversation info received.",

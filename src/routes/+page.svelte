@@ -25,6 +25,10 @@
     window.logger.logMessage("[Main Page]: Main page mounted");
   });
 
+  function loadNewConv() {
+    clinfo = structuredClone(new_chat_load_info);
+  }
+
   // send text function
   async function sendText() {
     let inputField = document.querySelector(".chat-input input");
@@ -142,7 +146,7 @@
         </div>
       {:else}
         <div class="newsubpage-holder">
-          <NewChatSubpage bind:this={chat_subpage} />
+          <NewChatSubpage ready={loadNewConv} bind:this={chat_subpage} />
         </div>
       {/if}
     </div>
